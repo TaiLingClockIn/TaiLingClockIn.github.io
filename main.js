@@ -74,7 +74,6 @@ function uploadData(){
     var detailDate = GetTime(0)
     var date = GetTime(2)
     var time = GetTime(3)
-    var frequency = 0
 
     if(document.getElementById('div1').style.display == "block"){displayTable()}
 
@@ -149,7 +148,7 @@ function getRecords(){
     var date = GetTime(2)
     var count = 0
     var i = 0
-    var count = 0
+    var DataCount = 0
 
     if(userId != ""){
         if(document.getElementById('div1').style.display != "block"){displayTable()}
@@ -157,11 +156,11 @@ function getRecords(){
         database.ref('ReportCount/' + userId).once('value').then(function(snapshot){
             var val = snapshot.val()
             if(val != null){
-                count = val.Count
+                DataCount = val.Count
             }
         })
         
-        if(count >= 5){
+        if(DataCount >= 5){
             while(count < 5){
                 date = DateCale(1,i)
                 database.ref('DetailedRecords/' + date + '/' + userId).once("value").then(function(snapshot){
@@ -175,7 +174,7 @@ function getRecords(){
             }
         }
         else{
-            for(j = 0 ; j <= count ; j++){
+            for(j = 0 ; j <= DataCount ; j++){
                 date = DateCale(1,j)
                 database.ref('DetailedRecords/' + date + '/' + userId).once("value").then(function(snapshot){
                     var val = snapshot.val();
