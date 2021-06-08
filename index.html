@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台菱機械 打卡系統</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <main>
+        <div id="date"></div>
+        <form>
+            <label for="userId">姓名</label><br>
+            <input type="text" name="userId" id="userId" onchange="value=value.replace(/[^\u4E00-\u9FA5]/g,'')"><br>
+            <button id="addBtn" type = "button" class="btn waves-effect waves-light" onclick="uploadData()">打卡簽到</button>
+            <button id="updateBtn" type = "button" class="btn waves-effect red darken-1" onclick="getRecords()">查看紀錄</button>
+            <div class = "div1" id = "div1">
+                <table id = "headerTable">
+                    <thead>
+                      <tr>
+                          <th>日期</th>
+                          <th>時間</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+            </div>
+        </form>
+    </main>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
+    <script src=https://code.jquery.com/jquery-3.6.0.min.js></script>
+    <script src="main.js"></script>
+</body>
+</html>
