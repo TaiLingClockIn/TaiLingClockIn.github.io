@@ -89,11 +89,11 @@ function uploadData(){
                 database.ref('Records/' + userId).child(date).set(time)
                 database.ref('ReportCount/' + userId).once('value').then(function(snapshot){
                     var tmp = snapshot.val()
-                    var count = tmp.Count
                     if(tmp == null){
                         database.ref('ReportCount/' + userId).child('Count').set(1)
                     }
                     else{
+			var count = tmp.Count
                         count+=1
                         database.ref('ReportCount/' + userId).child('Count').set(count)
                     }
