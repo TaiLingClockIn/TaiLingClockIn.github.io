@@ -15,6 +15,48 @@ firebase.database().goOnline();
 updateDate()
 setInterval(updateDate, 1000);
 
+//admin login
+function adminLogin(){
+    document.cookie = "name=oeschger";
+    document.cookie = "favorite_food=tripe";
+    alert(document.cookie);
+
+    var ac = document.getElementById("adminId") + "@gmail.com"
+    var pw = document.getElementById("adminPw")
+    firebase.auth().signInWithEmailAndPassword("fish19820711@gmail.com","lee1216fish0711jerry1122sam1013")
+    .then((userCredential) => {
+    var user = userCredential.user
+    })
+    .catch((error) => {
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    console.log("errorCode:" + errorCode + "  errorMessage:" + errorMessage)
+    });
+}
+
+function setAdminCookie(ac,pw){
+    var day = 30
+    var date = new Date()
+    date.setTime(date.getTime() + day*24*60*60*1000)
+    document.cookie = "test=test;expires=" + date.toGMTString()
+    console.log(document.cookie)
+}
+
+//admin login Interface
+function adminLoginInterface(){
+    dynamicForm(1)
+}
+
+//開啟登入介面
+function dynamicForm(i){
+    if(i == 1){
+        var form1 = document.getElementById("form1")
+        var form2 = document.getElementById("form2")
+        form1.style.display = "none"
+        form2.style.display = "block"
+    }
+}
+
 //Get current time i == 0 日期時間星期 , i == 1 排除星期 , i == 2 排除時間 , i == 3 只有時間
 function GetTime(i){
     var time = new Date()
@@ -93,7 +135,7 @@ function uploadData(){
                         database.ref('ReportCount/' + userId).child('Count').set(1)
                     }
                     else{
-			var count = tmp.Count
+                        var count = tmp.Count
                         count+=1
                         database.ref('ReportCount/' + userId).child('Count').set(count)
                     }
