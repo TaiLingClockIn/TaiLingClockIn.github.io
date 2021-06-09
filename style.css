@@ -3,6 +3,15 @@
     margin: 0;
 }
 
+#titleText{
+    font-family:Microsoft JhengHei;
+    font-size: 24px;
+    font-weight: bold;
+    color: #333333;
+    margin-bottom: 1rem;
+    display: none;
+}
+
 main {
     width: 100vw;
     height: 100vh;
@@ -18,9 +27,26 @@ form {
     padding: 5rem;
 }
 
+#form2{
+    margin-top: 1rem;
+    display: none;
+}
+
+#loginTitle{
+    font-size:30px;
+    font-weight: bold;
+    justify-content: center;
+    color: #000000;
+}
+
+#adminLoginBtn{
+    width: 100px;
+    float:right;
+}
+
 button {
     margin-top: 2rem;
-    margin-left: 1.5rem;
+    margin-left:3px;
 }
 
 .div1 {
