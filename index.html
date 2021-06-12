@@ -7,19 +7,22 @@
     <title>台菱機械 打卡系統</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="./style.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="jquery.qrcode.min.js"></script>
 </head>
 <body>
     <main>
+        <div id="qrcode"></div>
         <div id="date"></div>
         <div id ="titleText">台菱打卡系統</div>
         <form id = "form1">
             <label for="userId">姓名</label><br>
             <input type="text" name="userId" id="userId" onchange="value=value.replace(/[^\u4E00-\u9FA5]/g,'')"><br>
-            <button id="addBtn" type = "button" class="btn waves-effect waves-light" onclick="uploadData()">打卡簽到</button>
+            <button id="ClockInBtn" type = "button" class="btn waves-effect waves-light" onclick="uploadData()">打卡簽到</button>
             <button id="updateBtn" type = "button" class="btn waves-effect red darken-1" onclick="getRecords()">查看紀錄</button>
             <button id="adminBtn" type = "button" class="btn waves-effect blue" onclick="adminLoginInterface()">管理員</button>
             <div class = "div1" id = "div1">
-                <table id = "headerTable">
+                <table id = "RecordTable">
                     <thead>
                       <tr>
                           <th>日期</th>
@@ -33,17 +36,36 @@
         </form>
         <form id = "form2">
             <label id = "loginTitle">管理員登入</label><br>
-            <label for="ID">帳號</label><br>
+            <label id = "ac" for="ID">帳號</label><br>
             <input type="text" name="adminId" id="adminId" onchange="value=value.replace(/[^0-9a-zA-Z]/g,'')"><br>
-            <label for="PW">密碼</label><br>
+            <label id = "pw" for="PW">密碼</label><br>
             <input type="text" name="adminPw" id="adminPw" onchange="value=value.replace(/[^0-9a-zA-Z]/g,'')"><br>
+            <button id="retBtn" type = "button" class="btn waves-effect blue" onclick="backToClockIn()">回上一頁</button>
             <button id="adminLoginBtn" type = "button" class="btn waves-effect red accent-4" onclick="adminLogin()">登入</button>
+        </form>
+        <form id = "form3">
+            <label for="userId">姓名或序號</label><br>
+            <input type="text" name="employeeName" id="employeeName" onchange="value=value.replace(/[^\u4E00-\u9FA50-9a-zA-Z]/g,'')"><br>
+            <button id="addBtn" type = "button" class="btn waves-effect orange lighten-1" onclick="addEmployee()">新增</button>
+            <button id="delBtn" type = "button" class="btn waves-effect blue-grey darken-4" onclick="delEmployee()">刪除</button>
+            <button id="delBtn" type = "button" class="btn waves-effect red darken-2" onclick="adminLogout()">登出</button>
+            <div class = "div2" id = "div2">
+                <table id = "EmployeeTable">
+                    <thead>
+                      <tr>
+                          <th>員工序號</th>
+                          <th>員工姓名</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                  </table>
+            </div>
         </form>
     </main>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.1/firebase-database.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="main.js"></script>
 </body>
 </html>
