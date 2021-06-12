@@ -32,6 +32,12 @@ form {
     display: none;
 }
 
+#form3{
+    margin-top: 1rem;
+    display: none;
+}
+
+
 #loginTitle{
     font-size:30px;
     font-weight: bold;
@@ -49,9 +55,18 @@ button {
     margin-left:3px;
 }
 
+#addBtn {
+    color:#263238
+}
+
 .div1 {
     margin-top: 1.5rem;
     display : none;
+}
+
+.div2 {
+    margin-top: 1.5rem;
+    display : block;
 }
 
 #date {
