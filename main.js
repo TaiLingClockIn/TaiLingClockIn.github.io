@@ -14,46 +14,220 @@ firebase.initializeApp(firebaseConfig);
 firebase.database().goOnline();
 updateDate()
 setInterval(updateDate, 1000);
+var employeeCount = 0
+var lastNum = 0
+var emptyNum = ""
+
+//qrCode
+function qrCode(){
+    $('#qrcode').qrcode('this plugin is great');
+}
 
 //admin login
 function adminLogin(){
-    document.cookie = "name=oeschger";
-    document.cookie = "favorite_food=tripe";
-    alert(document.cookie);
-
-    var ac = document.getElementById("adminId") + "@gmail.com"
-    var pw = document.getElementById("adminPw")
-    firebase.auth().signInWithEmailAndPassword("fish19820711@gmail.com","lee1216fish0711jerry1122sam1013")
+    var ac = document.getElementById("adminId").value
+    var pw = document.getElementById("adminPw").value
+    var tmp = 1
+    firebase.auth().signInWithEmailAndPassword(ac + "@gmail.com",pw)
     .then((userCredential) => {
-    var user = userCredential.user
+        setAdminCookie(ac,pw)
+        //userCredential.user
+        firebase.database().ref('EmployeeCount').once('value').then((snapshot) => {
+            employeeCount = snapshot.val()
+        })
+        firebase.database().ref('EmptyNum').once('value').then((snapshot) => {
+            emptyNum = snapshot.val()
+        })
+        firebase.database().ref('Employee/LastNum').once('value').then((snapshot) => {
+            lastNum = snapshot.val()
+            hideLoginInterface()
+            var tmp = 0
+            for(i = 0 ; i <= lastNum ; i++){
+                firebase.database().ref('Employee/'+ i).once('value').then(function(snapshot){
+                    if(snapshot.val() != null){
+                        createTable(1,tmp,snapshot.val())
+                    }
+                    tmp+=1
+                })
+            }
+        })
     })
     .catch((error) => {
     var errorCode = error.code;
     var errorMessage = error.message;
     console.log("errorCode:" + errorCode + "  errorMessage:" + errorMessage)
-    });
+    })
+}
+
+//admin logout
+function adminLogout(){
+    dynamicForm(0)
+    firebase.auth().signOut()
+}
+
+//刷新表格內容
+function updateTable(){
+    cleanTable(1)
+    var tmp = 0
+    for(i = 0 ; i <= lastNum ; i++){
+        firebase.database().ref('Employee/'+ i).once('value').then(function(snapshot){
+            if(snapshot.val() != null){
+                createTable(1,tmp,snapshot.val())
+            }
+            tmp+=1
+        })
+    }
+    //setLastNum()
+}
+
+//add employee
+function addEmployee(){
+    var database = firebase.database()
+    var text = document.getElementById('employeeName').value
+    if(text != ""){
+        if($.isNumeric(text) == false){
+            if(emptyNum == ""){
+                database.ref('Employee/' + employeeCount).set(text)
+                if(lastNum<employee){database.ref('Employee/LastNum').set(employeeCount)}
+            }
+            else{
+                database.ref('Employee/' + Number(getTextLeft(emptyNum,","))).set(text)
+                if(Number($("table tr:last td:eq(-2)").text())<Number(getTextLeft(emptyNum,","))){database.ref('Employee/LastNum').set(Number(getTextLeft(emptyNum,",")))}
+                database.ref('EmptyNum').set(emptyNum.replace(getTextLeft(emptyNum,",")+",",""))
+                emptyNum = emptyNum.replace(getTextLeft(emptyNum,",")+",","")
+            }
+            employeeCount+=1
+            database.ref('EmployeeCount').set(employeeCount)
+            updateTable()
+            alert("新增成功")
+            document.getElementById('employeeName').value = ""
+            setLastNum()
+        }
+        else{
+            alert("新增請輸入姓名")
+        }
+
+    }
+    else{
+        alert("請先輸入姓名")
+    }
+}
+
+//del employee
+function delEmployee(){
+    var database = firebase.database()
+    var text = document.getElementById('employeeName').value
+    if(text != ""){
+        if($.isNumeric(text)){
+            database.ref('Employee/' + Number(text)).remove()
+            employeeCount-=1
+            database.ref('EmployeeCount').set(employeeCount)
+            database.ref('EmptyNum').set(emptyNum + "," + text)
+            updateTable()
+            alert("刪除成功")
+            document.getElementById('employeeName').value = ""
+            setLastNum()
+        }
+        else{
+            alert("請輸入序號，暫不支持姓名刪除")
+        }
+    }
+    else{
+        alert("請先輸入序號")
+    }
+}
+
+//設置最後一號
+function setLastNum(){
+    var database = firebase.database()
+    setTimeout(function(){
+        var last = Number($("table tr:last td:eq(-2)").text())
+        if(last != 0){database.ref('Employee/LastNum').set(last)}
+    },1000)
+}
+
+//sleep function
+function sleep (time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
+}
+
+//login success hide login interface
+function hideLoginInterface(){
+    document.getElementById("form2").style.display = "none"
+    document.getElementById("form3").style.display = "block"
 }
 
 function setAdminCookie(ac,pw){
-    var day = 30
-    var date = new Date()
-    date.setTime(date.getTime() + day*24*60*60*1000)
-    document.cookie = "test=test;expires=" + date.toGMTString()
-    console.log(document.cookie)
+    document.cookie = ac + "=" + pw + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
+}
+
+function setCookie(name){
+    document.cookie = name + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
+}
+
+//return back clockIn
+function backToClockIn(){
+    dynamicForm(0)
 }
 
 //admin login Interface
 function adminLoginInterface(){
     dynamicForm(1)
+    if(document.cookie != null){
+        document.getElementById("adminId").value = getTextLeft(document.cookie,"=")
+        document.getElementById("adminPw").value = getTextRight(document.cookie,"=")
+    }
 }
 
-//開啟登入介面
+//開啟登入介面 0 == 打卡, 1 == 管理員登入
 function dynamicForm(i){
-    if(i == 1){
-        var form1 = document.getElementById("form1")
-        var form2 = document.getElementById("form2")
-        form1.style.display = "none"
-        form2.style.display = "block"
+    if(i == 0){
+        document.getElementById("form1").style.display = "block"
+        document.getElementById("form2").style.display = "none"
+        document.getElementById("form3").style.display = "none"
+    }
+    else if(i == 1){
+        document.getElementById("form1").style.display = "none"
+        document.getElementById("form2").style.display = "block"
+        document.getElementById("form3").style.display = "none"
+    }
+}
+
+//字串處理(取左邊)
+function getTextLeft(str,match){
+    var p = 0
+
+    for(i = 0 ; i < str.length ; i++){
+        if(str.charAt(i) == match){
+            p = i
+            break
+        }
+    }
+
+    if(p != 0){
+        return str.slice(0,p)
+    }
+    else{
+        return ""
+    }
+}
+
+//字串處理(取右邊)
+function getTextRight(str,match){
+    var p = 0
+
+    for(i = 0 ; i < str.length ; i++){
+        if(str.charAt(i) == match){
+            p = i+1
+            break
+        }
+    }
+
+    if(p != 0){
+        return str.slice(p,str.length)
+    }
+    else{
+        return ""
     }
 }
 
@@ -183,7 +357,7 @@ function displayTable(){
 
 //獲取資料庫中個人的每日打卡紀錄
 function getRecords(){
-    cleanTable()
+    cleanTable(0)
 
     var userId = document.getElementById('userId').value
     var database = firebase.database()
@@ -208,7 +382,7 @@ function getRecords(){
                 database.ref('DetailedRecords/' + date + '/' + userId).once("value").then(function(snapshot){
                     var val = snapshot.val();
                     if(val != null){
-                        createTable(val.Date,val.Time)
+                        createTable(0,val.Date,val.Time)
                         count+=1
                     }
                 })
@@ -221,30 +395,40 @@ function getRecords(){
                 database.ref('DetailedRecords/' + date + '/' + userId).once("value").then(function(snapshot){
                     var val = snapshot.val();
                     if(val != null){
-                        createTable(val.Date,val.Time)
+                        createTable(0,val.Date,val.Time)
                     }
                 })
             }
         }
     }
+    else{
+        alert("請先輸入姓名，才可查詢紀錄")
+    }
 }
 
-//創建表格
-function createTable(date,temperature){
+//創建表格 參數一 == 第幾個Table , 參數二、三 == 表格內容
+function createTable(tableName,dateOrListnum,timeOrName){
     var td1 = document.createElement('td')
-    td1.appendChild(document.createTextNode(date));
+    td1.appendChild(document.createTextNode(dateOrListnum));
     var td2 = document.createElement('td')
-    td2.appendChild(document.createTextNode(temperature));
+    td2.appendChild(document.createTextNode(timeOrName));
     var tr1 = document.createElement('tr')
     tr1.appendChild(td1)
     tr1.appendChild(td2)
-    var table = document.getElementsByTagName('table')[0]
-    table.appendChild(tr1)
+    if(tableName == 0){
+        var table = document.getElementsByTagName('table')[0]
+        table.appendChild(tr1)
+    }
+    else if(tableName == 1){
+        var table = document.getElementsByTagName('table')[1]
+        table.appendChild(tr1)
+    }
 }
 
-//清空表格
-function cleanTable(){
+//清空表格 i == 0 table[0] , i == 1 table[1]
+function cleanTable(i){
     var table = document.getElementsByTagName('table')[0]
+    if(i == 1){table = document.getElementsByTagName('table')[1]}
     while(table.rows.length > 1){
         table.deleteRow(1)
     }
