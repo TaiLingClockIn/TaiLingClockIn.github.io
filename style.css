@@ -37,6 +37,13 @@ form {
     display: none;
 }
 
+th {
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
 
 #loginTitle{
     font-size:30px;
