@@ -14,41 +14,29 @@ firebase.initializeApp(firebaseConfig);
 firebase.database().goOnline();
 updateDate()
 setInterval(updateDate, 1000);
-var employeeCount = 0
-var lastNum = 0
-var emptyNum = ""
 
-//qrCode
+//生成qrCode
 function qrCode(){
     $('#qrcode').qrcode('this plugin is great');
 }
 
-//admin login
+//admin login 管理員登入
 function adminLogin(){
     var ac = document.getElementById("adminId").value
     var pw = document.getElementById("adminPw").value
-    var tmp = 1
     firebase.auth().signInWithEmailAndPassword(ac + "@gmail.com",pw)
     .then((userCredential) => {
         setAdminCookie(ac,pw)
+        alert("登入成功")
         //userCredential.user
-        firebase.database().ref('EmployeeCount').once('value').then((snapshot) => {
-            employeeCount = snapshot.val()
-        })
-        firebase.database().ref('EmptyNum').once('value').then((snapshot) => {
-            emptyNum = snapshot.val()
-        })
-        firebase.database().ref('Employee/LastNum').once('value').then((snapshot) => {
-            lastNum = snapshot.val()
-            hideLoginInterface()
-            var tmp = 0
-            for(i = 0 ; i <= lastNum ; i++){
-                firebase.database().ref('Employee/'+ i).once('value').then(function(snapshot){
-                    if(snapshot.val() != null){
-                        createTable(1,tmp,snapshot.val())
-                    }
-                    tmp+=1
-                })
+        hideLoginInterface()
+        firebase.database().ref('Employee').once('value').then((snapshot) => {
+            if(snapshot.val() != null){
+                var employee = snapshot.val()
+                var str = employee.split(",")
+                for(i = 0 ; i < str.length ; i++){
+                    createTable(1,str[i],"")
+                }
             }
         })
     })
@@ -56,121 +44,102 @@ function adminLogin(){
     var errorCode = error.code;
     var errorMessage = error.message;
     console.log("errorCode:" + errorCode + "  errorMessage:" + errorMessage)
+    alert("登入失敗，帳號或密碼錯誤")
     })
 }
 
-//admin logout
+//admin logout 管理員登出
 function adminLogout(){
-    dynamicForm(0)
     firebase.auth().signOut()
+    alert("登出成功，即將回到打卡簽到介面")
+    dynamicForm(0)
 }
 
 //刷新表格內容
 function updateTable(){
     cleanTable(1)
-    var tmp = 0
-    for(i = 0 ; i <= lastNum ; i++){
-        firebase.database().ref('Employee/'+ i).once('value').then(function(snapshot){
-            if(snapshot.val() != null){
-                createTable(1,tmp,snapshot.val())
+    firebase.database().ref('Employee').once('value').then((snapshot) => {
+        if(snapshot.val() != null){
+            var employee = snapshot.val()
+            var str = employee.split(",")
+            for(i = 0 ; i < str.length ; i++){
+                createTable(1,str[i],"")
             }
-            tmp+=1
-        })
-    }
+        }
+    })
     //setLastNum()
 }
 
-//add employee
+//add employee 添加員工
 function addEmployee(){
     var database = firebase.database()
     var text = document.getElementById('employeeName').value
     if(text != ""){
-        if($.isNumeric(text) == false){
-            if(emptyNum == ""){
-                database.ref('Employee/' + employeeCount).set(text)
-                if(lastNum<employee){database.ref('Employee/LastNum').set(employeeCount)}
+        database.ref('Employee').once('value').then((snapshot) => {
+            if(snapshot.val() != null){
+                var employee = snapshot.val() + "," + text
+                database.ref('Employee').set(employee)
+                updateTable()
+                alert("新增成功")
             }
-            else{
-                database.ref('Employee/' + Number(getTextLeft(emptyNum,","))).set(text)
-                if(Number($("table tr:last td:eq(-2)").text())<Number(getTextLeft(emptyNum,","))){database.ref('Employee/LastNum').set(Number(getTextLeft(emptyNum,",")))}
-                database.ref('EmptyNum').set(emptyNum.replace(getTextLeft(emptyNum,",")+",",""))
-                emptyNum = emptyNum.replace(getTextLeft(emptyNum,",")+",","")
-            }
-            employeeCount+=1
-            database.ref('EmployeeCount').set(employeeCount)
-            updateTable()
-            alert("新增成功")
-            document.getElementById('employeeName').value = ""
-            setLastNum()
-        }
-        else{
-            alert("新增請輸入姓名")
-        }
-
+        })
     }
     else{
         alert("請先輸入姓名")
     }
 }
 
-//del employee
+//del employee 刪除員工
 function delEmployee(){
     var database = firebase.database()
     var text = document.getElementById('employeeName').value
     if(text != ""){
-        if($.isNumeric(text)){
-            database.ref('Employee/' + Number(text)).remove()
-            employeeCount-=1
-            database.ref('EmployeeCount').set(employeeCount)
-            database.ref('EmptyNum').set(emptyNum + "," + text)
-            updateTable()
-            alert("刪除成功")
-            document.getElementById('employeeName').value = ""
-            setLastNum()
-        }
-        else{
-            alert("請輸入序號，暫不支持姓名刪除")
-        }
+        database.ref('Employee').once('value').then((snapshot) => {
+            if(snapshot.val() != null){
+                var employee = snapshot.val()
+                var str = employee.split(",")
+                var employeeN = ""
+                str = str.filter(function(item) {
+                    return item != text
+                })
+                for(i = 0 ; i < str.length ; i++){
+                    if(i == 0){employeeN = str[i]}
+                    else{employeeN = employeeN + "," + str[i]}
+                }
+                database.ref('Employee').set(employeeN)
+                updateTable()
+                alert("刪除成功")
+            }
+            else{alert("找不到該名員工")}
+        })
     }
     else{
-        alert("請先輸入序號")
+        alert("請先輸入姓名")
     }
 }
 
-//設置最後一號
-function setLastNum(){
-    var database = firebase.database()
-    setTimeout(function(){
-        var last = Number($("table tr:last td:eq(-2)").text())
-        if(last != 0){database.ref('Employee/LastNum').set(last)}
-    },1000)
-}
-
-//sleep function
-function sleep (time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
-}
-
-//login success hide login interface
+//login success hide login interface 登入成功隱藏登入畫面，並顯示員工清單
 function hideLoginInterface(){
     document.getElementById("form2").style.display = "none"
     document.getElementById("form3").style.display = "block"
 }
 
+//設置管理員登入時的帳戶cookie
 function setAdminCookie(ac,pw){
     document.cookie = ac + "=" + pw + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
 }
 
+//設置普通cookie，還沒用到
 function setCookie(name){
     document.cookie = name + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
 }
 
-//return back clockIn
+//return back clockIn 回到簽到畫面
 function backToClockIn(){
     dynamicForm(0)
 }
 
-//admin login Interface
+//admin login Interface 顯示登入畫面
 function adminLoginInterface(){
     dynamicForm(1)
     if(document.cookie != null){
@@ -263,7 +232,7 @@ function GetTime(i){
     }
 }
 
-//日期加減 i == 0 add , i == 1 sub , j == count
+//日期加減 i == 0 add 加 , i == 1 sub 減, j == count 次數
 function DateCale(i,j){
         var dateTime = new Date()
         if(i == 0){dateTime = dateTime.setDate(dateTime.getDate() + j)}
@@ -277,7 +246,7 @@ function DateCale(i,j){
         return "" + y + m + d
 }
 
-//Clock
+//Clock 時鐘
 function updateDate() {
     var timer = document.getElementById("date")
 	timer.textContent = GetTime(0);
@@ -327,7 +296,7 @@ function uploadData(){
 
 }
 
-//檢查日期
+//檢查日期 體溫回報時用的，沒用到
 function checkDate(dateP){
     if(dateP.length == 0){
         return true
@@ -407,19 +376,23 @@ function getRecords(){
 }
 
 //創建表格 參數一 == 第幾個Table , 參數二、三 == 表格內容
-function createTable(tableName,dateOrListnum,timeOrName){
-    var td1 = document.createElement('td')
-    td1.appendChild(document.createTextNode(dateOrListnum));
-    var td2 = document.createElement('td')
-    td2.appendChild(document.createTextNode(timeOrName));
-    var tr1 = document.createElement('tr')
-    tr1.appendChild(td1)
-    tr1.appendChild(td2)
+function createTable(tableName,dateOrName,time){
     if(tableName == 0){
+        var td1 = document.createElement('td')
+        td1.appendChild(document.createTextNode(dateOrName))
+        var td2 = document.createElement('td')
+        td2.appendChild(document.createTextNode(time))
+        var tr1 = document.createElement('tr')
+        tr1.appendChild(td1)
+        tr1.appendChild(td2)
         var table = document.getElementsByTagName('table')[0]
         table.appendChild(tr1)
     }
     else if(tableName == 1){
+        var td1 = document.createElement('td')
+        td1.appendChild(document.createTextNode(dateOrName))
+        var tr1 = document.createElement('tr')
+        tr1.appendChild(td1)
         var table = document.getElementsByTagName('table')[1]
         table.appendChild(tr1)
     }
