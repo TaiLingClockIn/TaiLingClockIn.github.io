@@ -20,7 +20,7 @@ function qrCode(){
     $('#qrcode').qrcode('this plugin is great');
 }
 
-//admin login 管理員登入
+//admin login
 function adminLogin(){
     var ac = document.getElementById("adminId").value
     var pw = document.getElementById("adminPw").value
@@ -48,7 +48,7 @@ function adminLogin(){
     })
 }
 
-//admin logout 管理員登出
+//admin logout
 function adminLogout(){
     firebase.auth().signOut()
     alert("登出成功，即將回到打卡簽到介面")
@@ -70,7 +70,7 @@ function updateTable(){
     //setLastNum()
 }
 
-//add employee 添加員工
+//add employee
 function addEmployee(){
     var database = firebase.database()
     var text = document.getElementById('employeeName').value
@@ -89,7 +89,7 @@ function addEmployee(){
     }
 }
 
-//del employee 刪除員工
+//del employee
 function delEmployee(){
     var database = firebase.database()
     var text = document.getElementById('employeeName').value
@@ -118,28 +118,26 @@ function delEmployee(){
     }
 }
 
-//login success hide login interface 登入成功隱藏登入畫面，並顯示員工清單
+//login success hide login interface
 function hideLoginInterface(){
     document.getElementById("form2").style.display = "none"
     document.getElementById("form3").style.display = "block"
 }
 
-//設置管理員登入時的帳戶cookie
 function setAdminCookie(ac,pw){
     document.cookie = ac + "=" + pw + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
 }
 
-//設置普通cookie，還沒用到
 function setCookie(name){
     document.cookie = name + "; expires=Fri, 31 Dec 9999 23:59:59 GMT"
 }
 
-//return back clockIn 回到簽到畫面
+//return back clockIn
 function backToClockIn(){
     dynamicForm(0)
 }
 
-//admin login Interface 顯示登入畫面
+//admin login Interface
 function adminLoginInterface(){
     dynamicForm(1)
     if(document.cookie != null){
@@ -148,7 +146,7 @@ function adminLoginInterface(){
     }
 }
 
-//開啟登入介面 0 == 打卡, 1 == 管理員登入
+//開啟登入介面 0 == ClockIn, 1 == adminLogin
 function dynamicForm(i){
     if(i == 0){
         document.getElementById("form1").style.display = "block"
@@ -232,7 +230,7 @@ function GetTime(i){
     }
 }
 
-//日期加減 i == 0 add 加 , i == 1 sub 減, j == count 次數
+//日期加減 i == 0 add , i == 1 sub, j == count
 function DateCale(i,j){
         var dateTime = new Date()
         if(i == 0){dateTime = dateTime.setDate(dateTime.getDate() + j)}
@@ -246,7 +244,7 @@ function DateCale(i,j){
         return "" + y + m + d
 }
 
-//Clock 時鐘
+//Clock
 function updateDate() {
     var timer = document.getElementById("date")
 	timer.textContent = GetTime(0);
@@ -296,7 +294,6 @@ function uploadData(){
 
 }
 
-//檢查日期 體溫回報時用的，沒用到
 function checkDate(dateP){
     if(dateP.length == 0){
         return true
@@ -375,7 +372,7 @@ function getRecords(){
     }
 }
 
-//創建表格 參數一 == 第幾個Table , 參數二、三 == 表格內容
+//創建表格
 function createTable(tableName,dateOrName,time){
     if(tableName == 0){
         var td1 = document.createElement('td')
@@ -398,7 +395,7 @@ function createTable(tableName,dateOrName,time){
     }
 }
 
-//清空表格 i == 0 table[0] , i == 1 table[1]
+//清空表格
 function cleanTable(i){
     var table = document.getElementsByTagName('table')[0]
     if(i == 1){table = document.getElementsByTagName('table')[1]}
